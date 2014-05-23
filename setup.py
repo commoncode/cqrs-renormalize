@@ -24,6 +24,9 @@ setup( name='cqrs-renormalize',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
+    dependency_links = [
+        'http://github.com/commoncode/cqrs/tarball/master#egg=cqrs-0.0.1',
+    ],
     install_requires = [
         'django-denormalize',
         'djangorestframework',
