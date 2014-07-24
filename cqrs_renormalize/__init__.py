@@ -2,7 +2,6 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.routers import SimpleRouter
 
 from oauth2_provider.ext.rest_framework import TokenHasReadWriteScope
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 
