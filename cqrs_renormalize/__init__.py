@@ -13,7 +13,7 @@ def daz_update(self, request, *args, **kwargs):
     '''
 
     # Hackish imports just while I work on this:
-    from django.core.exceptions import ValidationError
+    from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
     from rest_framework import status
     from rest_framework.response import Response
@@ -28,23 +28,26 @@ def daz_update(self, request, *args, **kwargs):
     for key, value in request.DATA.iteritems():
         try:
             attr = getattr(self.object, key)
-        except AttributeError:
+        except (AttributeError, ObjectDoesNotExist):
             continue
 
-        # I'm not quite sure if a M2M is the only case where the class has the
-        # "all" method, I tried with at isinstance but seems like
-        # ManyRelatedManager is generated on the fly so I couldn't use it
+        # Skip loop iteration if attr is a RelatedManager
         if not hasattr(attr.__class__, 'all'):
             continue
 
         items = attr.model.objects.filter(pk__in=value.split(','))
 
         if not items.exists():
-            return Response('Invalid M2M', status=status.HTTP_400_BAD_REQUEST)
+            return Response('Invalid', status=status.HTTP_400_BAD_REQUEST)
 
-        attr.clear()
+        try:
+            # This only works with M2M or FK with null=True
+            attr.clear()
+        except AttributeError:
+            # TODO how to clear ReverseFK, should we delete the objects?
+            pass
+
         attr.add(*items)
-
         data.pop(key)
 
     serializer = self.get_serializer(
